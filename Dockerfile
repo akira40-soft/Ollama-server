@@ -1,15 +1,14 @@
 FROM ollama/ollama:latest
 
-# Instale nginx
+# Instala nginx para proxy reverso
 RUN apt-get update && apt-get install -y nginx
 
-# Copie a configuração customizada do nginx
+# Copia configurações personalizadas
 COPY nginx.conf /etc/nginx/nginx.conf
-
-# Copie seu start.sh
 COPY start.sh .
 RUN chmod +x start.sh
 
 EXPOSE 80
 
-CMD ./start.sh
+CMD ["./start.sh"]
+
