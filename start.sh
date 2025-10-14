@@ -1,7 +1,7 @@
 #!/bin/bash
-# Verifica se o modelo existe, se não, puxa
-if ! ollama list | grep -q mistral:7b; then
-    ollama pull mistral:7b
-fi
-# Inicia o servidor Ollama ouvindo na porta correta
-ollama serve --host 0.0.0.0 --port ${PORT:-11434}
+# Start o Ollama em background
+ollama serve &
+# Aguarde um pouco para o Ollama subir (evite race condition)
+sleep 5
+# Inicie o nginx em foreground
+nginx -g 'daemon off;'
