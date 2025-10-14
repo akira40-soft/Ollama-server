@@ -7,11 +7,11 @@ fi
 # Inicia o Ollama em background
 ollama serve &
 
-# Aguarda 5 segundos para garantir que Ollama está rodando
+# Aguarda 5 segundos para garantir startup
 sleep 5
 
-# Testa endpoint e grava saída nos logs do Render (para depuração) — opcional
+# Testa endpoint local e grava no log do Render
 curl -v -X POST http://localhost:11434/api/generate -H 'Content-Type: application/json' -d '{"model":"mistral:7b", "prompt":"test"}'
 
-# Inicia o nginx em foreground
+# Sobe o nginx
 nginx -g 'daemon off;'
