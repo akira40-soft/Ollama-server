@@ -1,11 +1,15 @@
 FROM ollama/ollama:latest
 
-# Expõe a porta da API Ollama
-EXPOSE 11434
+# Instale nginx
+RUN apt-get update && apt-get install -y nginx
 
-# Copia o script start.sh
+# Copie a configuração customizada do nginx
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Copie seu start.sh
 COPY start.sh .
 RUN chmod +x start.sh
 
-# Define o script como o comando principal
-CMD ["./start.sh"]
+EXPOSE 80
+
+CMD ./start.sh
