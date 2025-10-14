@@ -1,17 +1,20 @@
 #!/bin/bash
-# Garante que o modelo está disponível
+
+# Baixa o modelo se não existir
 if ! ollama list | grep -q mistral:7b; then
     ollama pull mistral:7b
 fi
 
-# Inicia o Ollama em background
+# Aguarda até o modelo estar realmente listado
+until ollama list | grep -q mistral:7b; do
+    echo "Aguardando download do modelo mistral:7b terminar..."
+    sleep 10
+done
+
+# Sobe Ollama
 ollama serve &
 
-# Aguarda 5 segundos para garantir startup
 sleep 5
 
-# Testa endpoint local e grava no log do Render
-curl -v -X POST http://localhost:11434/api/generate -H 'Content-Type: application/json' -d '{"model":"mistral:7b", "prompt":"test"}'
-
-# Sobe o nginx
+# Sobe nginx
 nginx -g 'daemon off;'
