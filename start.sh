@@ -3,5 +3,5 @@
 if ! ollama list | grep -q mistral:7b; then
     ollama pull mistral:7b
 fi
-# Inicia o servidor
+# Inicia o servidor Ollama
 ollama serve
