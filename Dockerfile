@@ -1,18 +1,8 @@
 # Usa a imagem oficial do Ollama como base
 FROM ollama/ollama:latest
 
-# Instala dependências necessárias (Nginx e curl)
-RUN apt-get update && apt-get install -y nginx curl && rm -rf /var/lib/apt/lists/*
+# Expose the Ollama port
+EXPOSE 11434
 
-# Define o diretório de trabalho
-WORKDIR /app
-
-# Copia os arquivos de configuração e script
-COPY nginx.conf /etc/nginx/nginx.conf
-COPY start.sh /app/start.sh
-
-# Garante permissões de execução
-RUN chmod +x /app/start.sh
-
-# Define o ENTRYPOINT para executar o script diretamente
-ENTRYPOINT ["/app/start.sh"]
+# Run Ollama server and pull the model on startup
+CMD ["sh", "-c", "ollama serve & sleep 5 && ollama pull mistral:7b-instruct-v0.3-q4_0 && wait"]
