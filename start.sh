@@ -21,11 +21,11 @@ echo "✅ Ollama está rodando."
 MODEL="mistral:7b-instruct-v0.3-q4_0"
 echo "Usando modelo: $MODEL"
 
-# Verifica se o modelo está disponível via API (mais confiável que ollama list)
+# Verifica se o modelo está disponível via API
 if ! curl -s http://127.0.0.1:11434/api/tags | grep -q $MODEL; then
     echo "Modelo $MODEL não encontrado via API, puxando com retries..."
     for attempt in {1..5}; do
-        ollama pull $MODEL && break
+        ollama pull $MODEL && curl -s http://127.0.0.1:11434/api/tags | grep -q $MODEL && break
         echo "Pull falhou na tentativa $attempt. Retentando em 10s..."
         sleep 10
     done
