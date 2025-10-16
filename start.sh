@@ -11,28 +11,33 @@ until curl -s http://127.0.0.1:11434/api/tags > /dev/null; do
     sleep 5
     ((i++))
     if [ $i -gt 30 ]; then
-        echo "❌ Timeout: Ollama não iniciou em 2.5 minutos."
+        echo "❌ Timeout: Ollama não iniciou."
         exit 1
     fi
 done
-echo "✅ Ollama está rodando em 127.0.0.1:11434."
+echo "✅ Ollama está rodando."
 
-# Agora verifica e puxa o modelo se necessário
-if ! ollama list | grep -q mistral:7b; then
-    echo "Modelo mistral:7b não encontrado, puxando..."
-    ollama pull mistral:7b
+# Verifica e puxa modelo quantizado (mais leve)
+MODEL="mistral:7b-instruct-v0.3-q4_0"  # Versão leve, ~2.5 GB
+if ! ollama list | grep -q $MODEL; then
+    echo "Modelo $MODEL não encontrado, puxando com retries..."
+    for attempt in {1..5}; do
+        ollama pull $MODEL && break
+        echo "Pull falhou na tentativa $attempt. Retentando em 10s..."
+        sleep 10
+    done
 else
-    echo "✅ Modelo mistral:7b já disponível."
+    echo "✅ Modelo $MODEL já disponível."
 fi
 
-# Aguarda o download terminar (usa loop com timeout)
+# Aguarda o download terminar
 j=0
-until ollama list | grep -q mistral:7b; do
-    echo "Aguardando download do modelo mistral:7b terminar... (tentativa $((j+1))/60)"
+until ollama list | grep -q $MODEL; do
+    echo "Aguardando download do modelo $MODEL... (tentativa $((j+1))/60)"
     sleep 10
     ((j++))
     if [ $j -gt 60 ]; then
-        echo "❌ Timeout: Download não completou em 10 minutos."
+        echo "❌ Timeout: Download não completou."
         exit 1
     fi
 done
