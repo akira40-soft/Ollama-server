@@ -5,9 +5,9 @@ echo "Iniciando servidor Ollama..."
 ollama serve &
 
 # Aguarda o servidor estar pronto (testa a API com curl)
-echo "Aguardando Ollama iniciar..."
+i=0
 until curl -s http://127.0.0.1:11434/api/tags > /dev/null; do
-    echo "Aguardando servidor Ollama... (tentativa $(($i+1))/30)"
+    echo "Aguardando servidor Ollama... (tentativa $((i+1))/30)"
     sleep 5
     ((i++))
     if [ $i -gt 30 ]; then
@@ -25,13 +25,19 @@ else
     echo "✅ Modelo mistral:7b já disponível."
 fi
 
-# Aguarda o download terminar (opcional, usa loop similar)
+# Aguarda o download terminar (usa loop com timeout)
+j=0
 until ollama list | grep -q mistral:7b; do
-    echo "Aguardando download do modelo mistral:7b terminar..."
+    echo "Aguardando download do modelo mistral:7b terminar... (tentativa $((j+1))/60)"
     sleep 10
+    ((j++))
+    if [ $j -gt 60 ]; then
+        echo "❌ Timeout: Download não completou em 10 minutos."
+        exit 1
+    fi
 done
 echo "✅ Download concluído."
 
-# Inicia Nginx no foreground (para expor porta 80)
+# Inicia Nginx no foreground
 echo "Iniciando Nginx..."
 nginx -g 'daemon off;'
