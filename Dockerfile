@@ -10,8 +10,5 @@ COPY nginx.conf /etc/nginx/nginx.conf
 COPY start.sh .
 RUN chmod +x start.sh
 
-# Expõe porta 80 (Nginx)
-EXPOSE 80
-
-# Comando principal
-CMD ["./start.sh"]
+# Sobrescreve o ENTRYPOINT para executar o start.sh diretamente
+ENTRYPOINT ["./start.sh"]
