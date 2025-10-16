@@ -1,17 +1,14 @@
-FROM ollama/ollama:latest
+# Use the official Ollama image as base
+FROM ollama/ollama
 
-# Instala Nginx e curl
-RUN apt-get update && apt-get install -y nginx curl && rm -rf /var/lib/apt/lists/*
+# Set working directory
+WORKDIR /app
 
-# Copia nginx.conf
-COPY nginx.conf /etc/nginx/nginx.conf
+# Pull the model during build (requires internet access during build)
+RUN ollama pull mistral:7b
 
-# Copia e configura start.sh
-COPY start.sh .
-RUN chmod +x start.sh
+# Expose the default Ollama port
+EXPOSE 11434
 
-# Expõe porta 80 (Nginx)
-EXPOSE 80
-
-# Comando principal
-CMD ["./start.sh"]
+# Start Ollama server
+CMD ["ollama", "serve"]
