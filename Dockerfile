@@ -14,8 +14,5 @@ COPY start.sh /app/start.sh
 # Garante permissões de execução
 RUN chmod +x /app/start.sh
 
-# Define o volume persistente para salvar o modelo (ajustável no Railway)
-VOLUME /data/ollama
-
-# Sobrescreve o ENTRYPOINT para executar o script diretamente
+# Define o ENTRYPOINT para executar o script diretamente
 ENTRYPOINT ["/app/start.sh"]
