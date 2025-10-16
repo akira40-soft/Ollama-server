@@ -21,11 +21,11 @@ echo "✅ Ollama está rodando."
 MODEL="mistral:7b-instruct-v0.3-q4_0"
 echo "Usando modelo: $MODEL"
 
-# Verifica se o modelo está disponível via API
-if ! curl -s http://127.0.0.1:11434/api/tags | grep -q $MODEL; then
+# Verifica se o modelo está disponível via API e só puxa se necessário
+if ! curl -s http://127.0.0.1:11434/api/tags | grep -q "$MODEL"; then
     echo "Modelo $MODEL não encontrado via API, puxando com retries..."
     for attempt in {1..5}; do
-        ollama pull $MODEL && curl -s http://127.0.0.1:11434/api/tags | grep -q $MODEL && break
+        ollama pull "$MODEL" && sleep 5 && curl -s http://127.0.0.1:11434/api/tags | grep -q "$MODEL" && break
         echo "Pull falhou na tentativa $attempt. Retentando em 10s..."
         sleep 10
     done
@@ -35,18 +35,18 @@ else
     echo "Modelos disponíveis: $(curl -s http://127.0.0.1:11434/api/tags)"
 fi
 
-# Aguarda o download terminar (se necessário)
+# Aguarda o Ollama carregar o modelo completamente
 j=0
-until curl -s http://127.0.0.1:11434/api/tags | grep -q $MODEL; do
-    echo "Aguardando download do modelo $MODEL... (tentativa $((j+1))/60)"
+until curl -s -X POST http://127.0.0.1:11434/api/generate -H "Content-Type: application/json" -d "{\"model\":\"$MODEL\",\"prompt\":\"teste\"}" | grep -q "response"; do
+    echo "Aguardando Ollama carregar o modelo... (tentativa $((j+1))/60)"
     sleep 10
     ((j++))
     if [ $j -gt 60 ]; then
-        echo "❌ Timeout: Download não completou."
+        echo "❌ Timeout: Modelo não carregado."
         exit 1
     fi
 done
-echo "✅ Download concluído."
+echo "✅ Modelo carregado com sucesso."
 
 # Inicia Nginx
 echo "Iniciando Nginx..."
