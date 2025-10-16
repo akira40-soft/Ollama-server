@@ -1,12 +1,16 @@
 #!/bin/bash
 
+# Define o diretório persistente para os modelos (compatível com volume do Railway)
+export OLLAMA_MODELS=/data/ollama/models
+mkdir -p "$OLLAMA_MODELS"
+
 # Inicia o servidor Ollama em background
 echo "Iniciando servidor Ollama..."
 ollama serve &
 
-# Aguarda o servidor estar pronto
+# Aguarda o servidor Ollama estar pronto
 i=0
-until curl -s http://127.0.0.1:11434/api/tags > /dev/null; do
+until curl -s http://127.0.0.1:11434/api/tags > /dev/null 2>&1; do
     echo "Aguardando servidor Ollama... (tentativa $((i+1))/30)"
     sleep 5
     ((i++))
@@ -21,7 +25,7 @@ echo "✅ Ollama está rodando."
 MODEL="mistral:7b-instruct-v0.3-q4_0"
 echo "Usando modelo: $MODEL"
 
-# Verifica se o modelo está disponível via API e só puxa se necessário
+# Verifica se o modelo está disponível via API e puxa apenas se necessário
 if ! curl -s http://127.0.0.1:11434/api/tags | grep -q "$MODEL"; then
     echo "Modelo $MODEL não encontrado via API, puxando com retries..."
     for attempt in {1..5}; do
@@ -37,7 +41,7 @@ fi
 
 # Aguarda o Ollama carregar o modelo completamente
 j=0
-until curl -s -X POST http://127.0.0.1:11434/api/generate -H "Content-Type: application/json" -d "{\"model\":\"$MODEL\",\"prompt\":\"teste\"}" | grep -q "response"; do
+until curl -s -X POST http://127.0.0.1:11434/api/generate -H "Content-Type: application/json" -d "{\"model\":\"$MODEL\",\"prompt\":\"teste\"}" 2>/dev/null | grep -q "response"; do
     echo "Aguardando Ollama carregar o modelo... (tentativa $((j+1))/60)"
     sleep 10
     ((j++))
@@ -48,6 +52,6 @@ until curl -s -X POST http://127.0.0.1:11434/api/generate -H "Content-Type: appl
 done
 echo "✅ Modelo carregado com sucesso."
 
-# Inicia Nginx
+# Inicia o Nginx em foreground
 echo "Iniciando Nginx..."
 nginx -g 'daemon off;'
